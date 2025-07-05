@@ -13,5 +13,3 @@ steps:
   id: 'Install Dependencies'
   waitFor: ['Clone Repository']
 
-  images:
-  - '$_CUSTOM_COMPONENT_IMAGE_URI'

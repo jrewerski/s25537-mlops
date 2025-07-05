@@ -6,7 +6,8 @@ from kfp.dsl import (Artifact,
                         InputPath,
                         Output,
                         OutputPath,
-                        component
+                        component,
+                        Model
                         )
 
 @component(

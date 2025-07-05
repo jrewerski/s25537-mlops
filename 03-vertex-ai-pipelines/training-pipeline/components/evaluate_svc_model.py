@@ -6,8 +6,11 @@ from kfp.dsl import (Artifact,
                         InputPath,
                         Output,
                         OutputPath,
-                        component
+                        component,
+                        Model,
+                        Metrics
                         )
+from typing import NamedTuple
 
 @component(
     base_image="python:3.9",

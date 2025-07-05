@@ -65,3 +65,21 @@ def penguin_pipeline(
             model_display_name=model_name,
             model=train_task.outputs["model"],
         )
+
+if __name__ == '__main__':
+    compiler.Compiler().compile(
+        pipeline_func=penguin_pipeline,
+        package_path="penguin_svc_pipeline_with_registry2.json",
+    )
+
+    aiplatform.init(project="mlops-on-gcp-s25537", location='us-central1')
+
+    job = aiplatform.PipelineJob(
+            display_name="penguin-svc-with-registry-run",
+            template_path="penguin_svc_pipeline_with_registry.json",
+            pipeline_root="gs://vertex-ai-bucket-s25537",
+            enable_caching=True,
+        )
+
+    print("Uruchamianie potoku w Vertex AI...")
+    job.run()

@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     job = aiplatform.PipelineJob(
             display_name="penguin-svc-with-registry-run",
-            template_path="penguin_svc_pipeline_with_registry.json",
+            template_path="penguin_svc_pipeline_with_registry2.json",
             pipeline_root="gs://vertex-ai-bucket-s25537",
             enable_caching=True,
         )

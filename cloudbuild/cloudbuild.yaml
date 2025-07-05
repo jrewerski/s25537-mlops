@@ -5,5 +5,10 @@ steps:
   args: ['install', '-r', 'requirements.txt', '--user']
   id: 'Install Dependencies'
 
+- name: 'python:3.9'
+  entrypoint: 'python3'
+  args: ['$_PIPELINE_SCRIPT_PATH']
+  id: 'Compile Pipeline'
+
 options:
   logging: CLOUD_LOGGING_ONLY

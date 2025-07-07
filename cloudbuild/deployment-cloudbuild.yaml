@@ -20,7 +20,7 @@ steps:
   id: Trigger Deployment Pipeline
   entrypoint: 'python3'
   args:
-      - 'trigger_pipeline.py' 
+      - '03-vertex-ai-pipelines/trigger_pipeline.py' 
       - '--project-id=$PROJECT_ID'
       - '--region=$_REGION'
       - '--pipeline-spec-uri=$_PIPELINE_GCS_PATH/deployment_pipeline.json'

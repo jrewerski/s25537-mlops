@@ -1,3 +1,4 @@
+import sys
 import argparse
 import json
 from google.cloud import aiplatform
@@ -26,6 +27,16 @@ def main(args):
     job.submit(service_account=args.service_account)
     
     print(f"Pipeline job '{job.display_name}' submitted. View it at: {job.resource_name}")
+    print("Waiting for pipeline to complete...")
+    job.wait()
+    print("Pipeline finished.")
+    if job.state == aiplatform.gapic.PipelineState.PIPELINE_STATE_SUCCEEDED:
+        print("Pipeline run succeeded.")
+    else:
+        print(f"Pipeline run failed. Final state: {job.state}")
+        if job.error:
+            print(f"Error details: {job.error}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

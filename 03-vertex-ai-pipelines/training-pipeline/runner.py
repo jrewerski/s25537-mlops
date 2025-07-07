@@ -20,6 +20,7 @@ from components.get_data import get_data
 from components.preprocess_data import preprocess_data
 from components.train_svc_model import train_svc_model
 from components.evaluate_svc_model import evaluate_svc_model
+from components.get_parent_model import get_parent_model
 from components.register_model import register_model
 
 PREBUILT_IMAGE_URI = os.environ.get('CUSTOM_COMPONENT_IMAGE_URI')
@@ -29,6 +30,7 @@ if PREBUILT_IMAGE_URI:
     train_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     evaluate_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     register_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
+    get_parent_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
 
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(
@@ -66,6 +68,11 @@ def penguin_pipeline(
         evaluate_task.outputs["accuracy"] >= min_accuracy_threshold,
         name="accuracy-check",
     ):
+        get_parent_model_task = get_parent_model(
+            project=project_id,
+            region=region,
+            model_display_name=model_name,
+        )
         register_model(
             project_id=project_id,
             region=region,

@@ -14,7 +14,7 @@ import json
 
 @component(
     base_image="python:3.9",
-    packages_to_install=["pandas", "google-cloud-aiplatform==1.55.0", "gcsfs==2024.6.0", "fsspec", "pyarrow", "scikit-learn==1.5.0" ],
+    packages_to_install=["pandas", "google-cloud-aiplatform==1.55.0", "gcsfs==2024.6.0", "fsspec", "pyarrow", "scikit-learn==1.5.0", "json"],
 )
 def register_model(
     model: Input[Model],

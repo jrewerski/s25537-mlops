@@ -14,6 +14,11 @@ steps:
     - '$_COMPONENTS_DIR_PATH'
   id: 'Build Custom Component Image'
 
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '$_CUSTOM_COMPONENT_IMAGE_URI']
+  id: 'Push Custom Component Image'
+  waitFor: ['Build Custom Component Image']
+
  # Krok 4: Kompilacja potoku do formatu JSON.
 - name: 'python:3.9'
   entrypoint: 'python3'
@@ -21,7 +26,7 @@ steps:
   id: 'Compile Pipeline'
   env:
     - 'CUSTOM_COMPONENT_IMAGE_URI=$_CUSTOM_COMPONENT_IMAGE_URI'
-  waitFor: ['Build Custom Component Image']
+  waitFor: ['Push Custom Component Image']
 
   # Krok 5: Przesłanie skompilowanej definicji potoku do GCS.
 - name: 'gcr.io/cloud-builders/gsutil'

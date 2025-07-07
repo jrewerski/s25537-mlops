@@ -14,6 +14,7 @@ from kfp.dsl import (Artifact,
 from kfp import compiler
 from google.cloud import aiplatform
 from typing import NamedTuple
+from google_cloud_pipeline_components.v1.model import GetModelOp
 from google_cloud_pipeline_components.v1.endpoint import EndpointCreateOp, ModelDeployOp
 
 
@@ -36,9 +37,13 @@ def deployment_pipeline(
         location = region,
         display_name = endpoint_name
     )
+    
+    get_model_op = GetModelOp(
+        model_name=model_resource_name
+    )
 
     model_deploy = ModelDeployOp(
-        model = model_resource_name,
+        model=get_model_op.outputs["model"],
         endpoint = endpoint_create.outputs["endpoint"],
         automatic_resources_min_replica_count=1,
         automatic_resources_max_replica_count=1,

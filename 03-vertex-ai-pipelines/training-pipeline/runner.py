@@ -78,6 +78,7 @@ def penguin_pipeline(
             region=region,
             model_display_name=model_name,
             model=train_task.outputs["model"],
+            parent_model=get_parent_model_task.outputs["parent_model_resource_name"],
         )
 
 if __name__ == '__main__':

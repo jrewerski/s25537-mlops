@@ -19,6 +19,7 @@ def register_model(
     project_id: str,
     region: str,
     model_display_name: str,
+    parent_model: str = "" 
 ):
     """Rejestruje model w Vertex AI Model Registry."""
     from google.cloud import aiplatform
@@ -37,6 +38,7 @@ def register_model(
         artifact_uri=model_path,
         serving_container_image_uri=serving_container_image,
         sync=True,
+        parent_model=parent_model,
         labels = {"model_type": "svc", "framework" : "scikit-learn"}
     )
     print(f"Zarejestrowano model: {registered_model.resource_name}")

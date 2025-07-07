@@ -17,6 +17,9 @@ steps:
   entrypoint: 'python3'
   args: ['$_PIPELINE_SCRIPT_PATH']
   id: 'Compile Pipeline'
+  env:
+    - 'CUSTOM_COMPONENT_IMAGE_URI=$_CUSTOM_COMPONENT_IMAGE_URI'
+  waitFor: ['Build Custom Component Image']
 
 images:
   - '$_CUSTOM_COMPONENT_IMAGE_URI'

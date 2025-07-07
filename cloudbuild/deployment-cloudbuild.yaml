@@ -8,7 +8,7 @@ steps:
 - name: 'python:3.9'
   id: Compile Deployment Pipeline
   entrypoint: 'python3'
-  args: [03-vertex-ai-pipelines/deployment-pipeline/runner.py']
+  args: ['03-vertex-ai-pipelines/deployment-pipeline/runner.py']
 
 # Krok przesłania definicji do GCS
 - name: 'gcr.io/cloud-builders/gsutil'

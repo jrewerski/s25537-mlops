@@ -29,15 +29,14 @@ steps:
   id: 'Upload Pipeline to GCS'
   waitFor: ['Compile Pipeline']
 
-# Krok 6: Uruchomienie potoku w Vertex AI z parametrami.
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  entrypoint: 'gcloud'
+# Krok 6: Uruchomienie potoku w Vertex AI za pomocą skryptu Python.
+- name: 'python:3.9' # Używamy obrazu z Pythonem
+  entrypoint: 'python3'
   args:
-    - 'ai'
-    - 'pipelines'
-    - 'run'
+    - '03-vertex-ai-pipelines/trigger_pipeline.py' 
+    - '--project-id=$PROJECT_ID' 
     - '--region=$_REGION'
-    - '--gcs-output-path=$_PIPELINE_GCS_PATH/$_PIPELINE_NAME.json'
+    - '--pipeline-spec-uri=$_PIPELINE_GCS_PATH/$_PIPELINE_NAME.json'
     - '--display-name=run-${_PIPELINE_NAME}-${SHORT_SHA}'
     - '--parameter-file=$_PARAMETER_FILE'
     - '--service-account=$_SERVICE_ACCOUNT'

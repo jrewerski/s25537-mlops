@@ -24,10 +24,10 @@ steps:
   waitFor: ['Build Custom Component Image']
 
   # Krok 5: Przesłanie skompilowanej definicji potoku do GCS.
-  - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/$_PIPELINE_NAME.json']
-    id: 'Upload Pipeline to GCS'
-    waitFor: ['Compile Pipeline']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/$_PIPELINE_NAME.json']
+  id: 'Upload Pipeline to GCS'
+  waitFor: ['Compile Pipeline']
 images:
   - '$_CUSTOM_COMPONENT_IMAGE_URI'
 options:

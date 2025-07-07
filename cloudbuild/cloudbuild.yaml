@@ -10,7 +10,7 @@ steps:
     - 'build'
     - '-t'
     - '$_CUSTOM_COMPONENT_IMAGE_URI'
-    - './components' 
+    - '$_COMPONENTS_DIR_PATH'
   id: 'Build Custom Component Image'
 
 - name: 'python:3.9'

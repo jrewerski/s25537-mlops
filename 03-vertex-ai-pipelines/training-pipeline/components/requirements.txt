@@ -8,4 +8,5 @@ click==8.1.7
 docstring-parser
 urllib3
 protobuf
+json
 google-cloud-aiplatform==1.55.0

@@ -26,7 +26,7 @@ def register_model(
 ):
     """Rejestruje model w Vertex AI Model Registry."""
     from google.cloud import aiplatform
-    import os
+    import json
 
     print(f"project_id : {project_id}")
     print(f"region : {region}")

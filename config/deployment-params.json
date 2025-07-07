@@ -1,0 +1,8 @@
+{
+  "parameter_values": {
+    "project_id": "mlops-on-gcp-s25537",
+    "region": "us-central1",
+    "model_name": "puffin-svc-model",
+    "endpoint_name": "puffin-endpoint"
+  }
+}

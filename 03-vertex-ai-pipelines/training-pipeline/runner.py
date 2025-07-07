@@ -32,7 +32,7 @@ if PREBUILT_IMAGE_URI:
 
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(
-    name="penguin-svc-classification-with-registry",
+    name="training-pipeline",
     description="Potok trenujący i rejestrujący model SVC.",
     pipeline_root="gs://vertex-ai-bucket-s25537",
 )
@@ -77,5 +77,5 @@ if __name__ == '__main__':
     print("Kompilacja potoku")
     compiler.Compiler().compile(
         pipeline_func=penguin_pipeline,
-        package_path="training-pipeline.json",
+        package_path="pipeline.json",
     )

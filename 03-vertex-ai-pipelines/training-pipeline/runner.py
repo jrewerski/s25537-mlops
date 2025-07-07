@@ -1,3 +1,4 @@
+import os
 import kfp
 from kfp import dsl
 from kfp.dsl import (Artifact,
@@ -21,7 +22,13 @@ from components.train_svc_model import train_svc_model
 from components.evaluate_svc_model import evaluate_svc_model
 from components.register_model import register_model
 
-
+PREBUILT_IMAGE_URI = os.environ.get('CUSTOM_COMPONENT_IMAGE_URI')
+if PREBUILT_IMAGE_URI:
+    get_data.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
+    preprocess_data.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
+    train_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
+    evaluate_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
+    register_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
 
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(
@@ -67,19 +74,8 @@ def penguin_pipeline(
         )
 
 if __name__ == '__main__':
+    print("Kompilacja potoku")
     compiler.Compiler().compile(
         pipeline_func=penguin_pipeline,
-        package_path="penguin_svc_pipeline_with_registry2.json",
+        package_path="training-pipeline.json",
     )
-
-    aiplatform.init(project="mlops-on-gcp-s25537", location='us-central1')
-
-    job = aiplatform.PipelineJob(
-            display_name="penguin-svc-with-registry-run",
-            template_path="penguin_svc_pipeline_with_registry2.json",
-            pipeline_root="gs://vertex-ai-bucket-s25537",
-            enable_caching=True,
-        )
-
-    print("Uruchamianie potoku w Vertex AI...")
-    job.run()

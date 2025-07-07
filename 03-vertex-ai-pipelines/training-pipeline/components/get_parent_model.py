@@ -7,13 +7,13 @@ from typing import NamedTuple
 )
 def get_parent_model(
     project: str,
-    location: str,
+    region: str,
     model_display_name: str,
 ) -> NamedTuple("Outputs", [("parent_model_resource_name", str)]):
 
     from google.cloud import aiplatform
 
-    aiplatform.init(project=project, location=location)
+    aiplatform.init(project=project, location=region)
     
     # Filtruj modele po nazwie wyświetlanej
     models = aiplatform.Model.list(

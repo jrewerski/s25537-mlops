@@ -5,10 +5,20 @@ steps:
   args: ['install', '-r', 'requirements.txt', '--user']
   id: 'Install Dependencies'
 
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - '$_CUSTOM_COMPONENT_IMAGE_URI'
+    - './components' 
+  id: 'Build Custom Component Image'
+
 - name: 'python:3.9'
   entrypoint: 'python3'
   args: ['$_PIPELINE_SCRIPT_PATH']
   id: 'Compile Pipeline'
 
+images:
+  - '$_CUSTOM_COMPONENT_IMAGE_URI'
 options:
   logging: CLOUD_LOGGING_ONLY

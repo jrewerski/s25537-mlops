@@ -14,7 +14,7 @@ from typing import NamedTuple
 
 @component(
     base_image="python:3.9",
-    packages_to_install=["pandas==2.2.2", "scikit-learn==1.5.0", "joblib==1.4.2", "gcsfs==2024.6.0", "fsspec"],
+    packages_to_install=["pandas==2.2.2", "scikit-learn==1.5.0", "gcsfs==2024.6.0", "fsspec"],
 )
 def evaluate_svc_model(
     test_dataset: Input[Dataset],

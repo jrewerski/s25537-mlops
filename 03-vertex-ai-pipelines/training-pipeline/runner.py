@@ -38,11 +38,12 @@ if PREBUILT_IMAGE_URI:
     description="Potok trenujący i rejestrujący model SVC.",
     pipeline_root="gs://vertex-ai-bucket-s25537",
 )
-def penguin_pipeline(
+def training_pipeline(
     gcs_data_path: str = "gs://data-s25537/penguins.csv",
     project_id: str = "mlops-on-gcp-s25537",
     region: str = "us-central1",
-    model_name: str = "puffin",
+    model_name: str = "default-model",
+    model_labels_str: str = '{}',
     test_split_ratio: float = 0.3,
     min_accuracy_threshold: float = 95.0,
 ):
@@ -79,11 +80,12 @@ def penguin_pipeline(
             model_display_name=model_name,
             model=train_task.outputs["model"],
             parent_model=get_parent_model_task.outputs["parent_model_resource_name"],
+            model_labels=model_labels_str
         )
 
 if __name__ == '__main__':
     print("Kompilacja potoku")
     compiler.Compiler().compile(
-        pipeline_func=penguin_pipeline,
+        pipeline_func=training_pipeline,
         package_path="pipeline.json",
     )

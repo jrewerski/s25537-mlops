@@ -9,6 +9,8 @@ from kfp.dsl import (Artifact,
                         component,
                         Model
                         )
+import json
+
 
 @component(
     base_image="python:3.9",
@@ -19,7 +21,8 @@ def register_model(
     project_id: str,
     region: str,
     model_display_name: str,
-    parent_model: str = "" 
+    parent_model: str = "" ,
+    model_labels: str = '{}'
 ):
     """Rejestruje model w Vertex AI Model Registry."""
     from google.cloud import aiplatform
@@ -30,6 +33,13 @@ def register_model(
     print(f"model : {model}")
 
     aiplatform.init(project=project_id, location=region)
+
+    try:
+        labels = json.loads(model_labels)
+        print(f"Używam etykiet: {labels}")
+    except json.JSONDecodeError:
+            print("Błąd w parsowaniu etykiet.")
+
     serving_container_image = "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-5:latest"
     model_path = '/'.join(model.uri.split('/')[:-1])
     # Przesłanie i rejestracja modelu

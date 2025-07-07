@@ -5,6 +5,7 @@
     "region": "us-central1",
     "model_name": "puffin-svc-model",
     "test_split_ratio": 0.3,
-    "min_accuracy_threshold": 95.0
+    "min_accuracy_threshold": 95.0,
+    "model_labels_str": "{\"model_type\": \"svc\", \"framework\": \"scikit-learn\", \"run_source\": \"cloud-build\"}"
   }
 }

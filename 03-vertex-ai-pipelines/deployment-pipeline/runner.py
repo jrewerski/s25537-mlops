@@ -48,6 +48,8 @@ def deployment_pipeline(
         endpoint = endpoint_create.outputs["endpoint"],
         automatic_resources_min_replica_count=1,
         automatic_resources_max_replica_count=1,
+        deployed_model_display_name = "Predict-Puffin", 
+        dedicated_resources_machine_type = "n1-standard-2",
     )
 
 

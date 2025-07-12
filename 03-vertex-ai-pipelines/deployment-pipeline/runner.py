@@ -46,10 +46,10 @@ def deployment_pipeline(
     model_deploy = ModelDeployOp(
         model=get_model_op.outputs["model"],
         endpoint = endpoint_create.outputs["endpoint"],
-        automatic_resources_min_replica_count=1,
-        automatic_resources_max_replica_count=1,
         deployed_model_display_name = "Predict-Puffin", 
-        dedicated_resources_machine_type = "n1-standard-2",
+        dedicated_resources_machine_type="n1-standard-2",
+        dedicated_resources_min_replica_count=1,
+        dedicated_resources_max_replica_count=1
     )
 
 

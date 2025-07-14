@@ -1,18 +1,27 @@
 # Ten plik jest uruchamiany przez trigger nasłuchujący na wiadomości Pub/Sub.
 # Jego zadaniem jest uruchomienie gotowego, skompilowanego potoku wdrożeniowego.
 steps:
-# KROK DIAGNOSTYCZNY: Drukujemy zawartość wiadomości z Pub/Sub
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: 'Debug PubSub Message'
+  id: 'Debug-Step'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      echo "--- SUROWA ZAWARTOŚĆ WIADOMOŚCI (BASE64) ---"
-      echo "$$BODY"
-      echo "--- ZDEKODOWANA ZAWARTOŚĆ WIADOMOŚCI ---"
-      echo $$BODY | base64 -d | jq .
-      echo "-------------------------------------------"
+      echo "--- KROK DIAGNOSTYCZNY ---"
+      echo ""
+      echo "1. Wartość zmiennej podstawianej _MODEL_RESOURCE_NAME:"
+      echo "-->$_MODEL_RESOURCE_NAME<--"
+      echo ""
+      echo "2. Surowa zawartość wiadomości z Pub/Sub (zmienna \$\$BODY, zakodowana w base64):"
+      echo "-->$$BODY<--"
+      echo ""
+      echo "3. Zdekodowana zawartość wiadomości (jeśli istnieje):"
+      # Zainstaluj jq do ładnego formatowania JSON
+      apt-get update > /dev/null && apt-get install -y jq > /dev/null
+      DECODED_BODY=$(echo $$BODY | base64 -d | jq .)
+      echo "$$DECODED_BODY"
+      echo ""
+      echo "--- KONIEC KROKU DIAGNOSTYCZNEGO ---"
 - name:  'gcr.io/cloud-builders/gcloud'
   id: 'Trigger Deployment Pipeline'
   entrypoint: 'bash'
@@ -24,15 +33,15 @@ steps:
       # Najpierw instalujemy jq.
       apt-get update && apt-get install -y jq
 
-      MODEL_ID=$(echo $$BODY | base64 -d | jq -r .model_resource_name)
+      MODEL_RESOURCE_NAME=$(echo $$BODY | base64 -d | jq -r .model_resource_name)
       
       # Sprawdzamy, czy udało się odczytać ID modelu.
-      if [ -z "$$MODEL_ID" ] || [ "$$MODEL_ID" == "null" ]; then
+      if [ -z " $_MODEL_RESOURCE_NAME" ] || [ " $_MODEL_RESOURCE_NAME" == "null" ]; then
         echo "Błąd: Nie udało się odczytać ID modelu z wiadomości Pub/Sub."
         exit 1
       fi
 
-      echo "Uruchamianie wdrożenia dla modelu: $$MODEL_ID"
+      echo "Uruchamianie wdrożenia dla modelu:  $_MODEL_RESOURCE_NAME"
 
       # Uruchamiamy gotowy potok z GCS, przekazując wszystkie wymagane parametry.
       gcloud ai pipelines run \
@@ -41,10 +50,10 @@ steps:
         --project=$PROJECT_ID \
         --display-name="run-deployment-pubsub-$BUILD_ID" \
         --service-account=$_SERVICE_ACCOUNT \
-        --parameter=model_resource_name="$$MODEL_ID" \
+        --parameter=model_resource_name=" $_MODEL_RESOURCE_NAME" \
         --parameter=project_id="$PROJECT_ID" \
         --parameter=region="$_REGION" \
         --parameter=endpoint_name="$_ENDPOINT_NAME"
-  waitFor: ['Debug PubSub Message'] 
+
 options:
   logging: CLOUD_LOGGING_ONLY

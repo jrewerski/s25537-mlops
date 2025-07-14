@@ -86,12 +86,12 @@ def training_pipeline(
         )
     # Wywołaj trigger Cloud Build z ID zarejestrowanego modelu
 
-    trigger_cd_pipeline_task = trigger_cloud_build(
-        project_id=project_id,
-        trigger_id=cd_trigger_id,
-        region=region,
-        model_resource_name=register_model_task.outputs["model_resource_name"]
-    )
+        trigger_cd_pipeline_task = trigger_cloud_build(
+            project_id=project_id,
+            trigger_id=cd_trigger_id,
+            region=region,
+            model_resource_name=register_model_task.outputs["model_resource_name"]
+        )
 
 if __name__ == '__main__':
     print("Kompilacja potoku")

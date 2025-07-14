@@ -32,7 +32,7 @@ if PREBUILT_IMAGE_URI:
     evaluate_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     register_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     get_parent_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
-
+    trigger_cloud_build.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(
     name="training-pipeline",
@@ -84,8 +84,6 @@ def training_pipeline(
             parent_model=get_parent_model_task.outputs["parent_model_resource_name"],
             model_labels=model_labels_str
         )
-    # Wywołaj trigger Cloud Build z ID zarejestrowanego modelu
-
         trigger_cd_pipeline_task = trigger_cloud_build(
             project_id=project_id,
             trigger_id=cd_trigger_id,

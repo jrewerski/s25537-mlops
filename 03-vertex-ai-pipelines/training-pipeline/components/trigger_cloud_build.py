@@ -1,52 +1,74 @@
-import subprocess
-import sys
+mport sys
 from kfp.dsl import component
+from typing import NamedTuple
 
 @component(
-    # Używamy tego samego obrazu, aby przetestować go do granic możliwości
-    base_image="google/cloud-sdk:slim",
+    base_image="python:3.9"
+    packages_to_install=["google-cloud-build==3.20.0", "gcsfs", "fsspec", "pyarrow"]
 )
 def trigger_cloud_build(
     project_id: str,
     trigger_id: str,
     model_resource_name: str,
-    region: str = "global",
-):
+    region: str = "us-central1", # Cloud Build API zazwyczaj nie używa regionu dla triggerów
+) -> NamedTuple("Outputs", [("build_log_url", str)]):
     """
-    ULTRA-PROSTA WERSJA DIAGNOSTYCZNA.
-    Sprawdza, czy w ogóle można uruchomić jakiekolwiek polecenie systemowe.
+    Wywołuje trigger Cloud Build za pomocą biblioteki klienckiej Pythona.
     """
-    print("--- ROZPOCZYNAM TEST ŚRODOWISKA ---")
-    
+    from google.cloud.devtools import cloudbuild_v1
+    from google.protobuf.json_format import MessageToDict
+
     try:
-        print("\n--- TEST 1: Sprawdzanie bieżącego katalogu (pwd) ---")
-        # Używamy check=True, aby komponent zakończył się błędem, jeśli polecenie zawiedzie
-        subprocess.run(["pwd"], check=True, capture_output=True, text=True)
-        print("Test 1 ZAKOŃCZONY SUKCESEM.")
+        print("Inicjalizowanie klienta Cloud Build...")
+        client = cloudbuild_v1.CloudBuildClient()
 
-        print("\n--- TEST 2: Listowanie zawartości katalogu głównego (ls -la /) ---")
-        subprocess.run(["ls", "-la", "/"], check=True, capture_output=True, text=True)
-        print("Test 2 ZAKOŃCZONY SUKCESEM.")
+        # Definicja podstawień (substitutions), które zostaną przekazane do triggera.
+        substitutions = {
+            "_MODEL_RESOURCE_NAME": model_resource_name,
+        }
+
+        print(f"Przygotowywanie żądania dla triggera: {trigger_id} w projekcie {project_id}")
         
-        print("\n--- TEST 3: Listowanie zawartości bieżącego katalogu (ls -la .) ---")
-        subprocess.run(["ls", "-la", "."], check=True, capture_output=True, text=True)
-        print("Test 3 ZAKOŃCZONY SUKCESEM.")
+        # Tworzymy obiekt Build, który zawiera nasze podstawienia.
+        # To jest kluczowy krok, aby przekazać dynamiczne parametry.
+        build = cloudbuild_v1.Build()
+        build.substitutions.update(substitutions)
 
-        print("\n--- TEST ŚRODOWISKA ZAKOŃCZONY SUKCESEM ---")
+        # Tworzymy żądanie uruchomienia triggera.
+        # Przekazujemy obiekt `build` jako szablon do nadpisania.
+        request = cloudbuild_v1.RunBuildTriggerRequest(
+            project_id=project_id,
+            trigger_id=trigger_id,
+            source=None,  # Używamy definicji z triggera
+        )
         
-        # Celowo powodujemy błąd, aby zatrzymać potok tutaj i nie iść dalej.
-        # Chcemy tylko zobaczyć logi z powyższych testów.
-        print("\nCelowe zatrzymanie potoku, aby sprawdzić logi. To nie jest prawdziwy błąd.")
-        sys.exit(1)
+        # Niestety, RunBuildTriggerRequest nie pozwala na proste nadpisanie `substitutions`.
+        # Musimy użyć bardziej złożonej metody `create_build`, pobierając najpierw definicję triggera.
+        
+        print("Pobieranie definicji triggera...")
+        trigger_definition = client.get_build_trigger(project_id=project_id, trigger_id=trigger_id)
+        
+        # Klonujemy szablon budowania z triggera
+        build_template = trigger_definition.build_template
+        
+        # Łączymy predefiniowane podstawienia z triggera z naszymi nowymi
+        merged_substitutions = build_template.substitutions
+        merged_substitutions.update(substitutions)
+        build_template.substitutions.clear()
+        build_template.substitutions.update(merged_substitutions)
 
-    except subprocess.CalledProcessError as e:
-        print(f"\n--- KRYTYCZNY BŁĄD PODCZAS TESTU ŚRODOWISKA ---")
-        print(f"Polecenie: {e.cmd}")
-        print(f"Kod wyjścia: {e.returncode}")
-        print(f"Stdout: {e.stdout}")
-        print(f"Stderr: {e.stderr}")
-        sys.exit(1)
+        print(f"Uruchamianie budowania z połączonymi podstawieniami: {merged_substitutions}")
+
+        # Tworzymy nowe budowanie na podstawie szablonu z triggera i naszych podstawień
+        operation = client.create_build(project_id=project_id, build=build_template)
+        
+        build_info = operation.metadata.build
+        log_url = build_info.log_url
+
+        print(f"Pomyślnie uruchomiono budowanie w Cloud Build. ID: {build_info.id}")
+        print(f"URL logów: {log_url}")
+        
+        return (log_url,)
+
     except Exception as e:
-        print(f"\n--- KRYTYCZNY BŁĄD OGÓLNY ---")
-        print(e)
-        sys.exit(1)
+        print("Wystąpił krytyczny błąd podczas próby uruchomienia triggera Cloud Build.")

@@ -22,6 +22,7 @@ from components.train_svc_model import train_svc_model
 from components.evaluate_svc_model import evaluate_svc_model
 from components.get_parent_model import get_parent_model
 from components.register_model import register_model
+from components.trigger_cloud_build import trigger_cloud_build
 
 PREBUILT_IMAGE_URI = os.environ.get('CUSTOM_COMPONENT_IMAGE_URI')
 if PREBUILT_IMAGE_URI:
@@ -31,6 +32,7 @@ if PREBUILT_IMAGE_URI:
     evaluate_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     register_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     get_parent_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
+    trigger_cloud_build.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
 
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(
@@ -46,6 +48,7 @@ def training_pipeline(
     model_labels_str: str = '{}',
     test_split_ratio: float = 0.3,
     min_accuracy_threshold: float = 95.0,
+    cd_trigger_id: str = "trigger-deploy"
 ):
     """Definiuje przepływ pracy w potoku z warunkową rejestracją."""
     get_data_task = get_data(gcs_input_path=gcs_data_path)
@@ -74,7 +77,7 @@ def training_pipeline(
             region=region,
             model_display_name=model_name,
         )
-        register_model(
+        register_model_task = register_model(
             project_id=project_id,
             region=region,
             model_display_name=model_name,
@@ -82,6 +85,13 @@ def training_pipeline(
             parent_model=get_parent_model_task.outputs["parent_model_resource_name"],
             model_labels=model_labels_str
         )
+    # Wywołaj trigger Cloud Build z ID zarejestrowanego modelu
+        trigger_cd_pipeline_task = trigger_cloud_build(
+            project_id=project_id,
+            trigger_id=cd_trigger_id,
+            model_resource_name=register_model_task.outputs["model_resource_name"]
+        )
+
 
 if __name__ == '__main__':
     print("Kompilacja potoku")

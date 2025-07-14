@@ -10,7 +10,6 @@ from kfp.dsl import (Artifact,
                         Model
                         )
 import json
-from typing import NamedTuple
 
 
 @component(
@@ -24,10 +23,8 @@ def register_model(
     model_display_name: str,
     parent_model: str = "" ,
     model_labels: str = '{}'
-) -> NamedTuple("Outputs", [("model_resource_name", str)]):
-    """
-    Rejestruje model w Vertex AI Model Registry i zwraca jego resource_name.
-    """
+):
+    """Rejestruje model w Vertex AI Model Registry."""
     from google.cloud import aiplatform
     import json
 
@@ -54,6 +51,4 @@ def register_model(
         parent_model=parent_model,
         labels = {"model_type": "svc", "framework" : "scikit-learn"}
     )
-    model_resource_name = registered_model.resource_name
-    print(f"Zarejestrowano model: {model_resource_name}")
-    return (model_resource_name,)
+    print(f"Zarejestrowano model: {registered_model.resource_name}")

@@ -20,7 +20,7 @@ def main(args):
         display_name=args.display_name,
         template_path=args.pipeline_spec_uri,
         parameter_values=pipeline_parameters,
-        enable_caching=True, 
+        enable_caching=False, 
     )
 
     # Prześlij zadanie, używając podanego konta serwisowego

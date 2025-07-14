@@ -33,4 +33,5 @@ steps:
         --parameter=project_id="$PROJECT_ID" \
         --parameter=region="$_REGION" \
         --parameter=endpoint_name="$_ENDPOINT_NAME"
+options:
   logging: CLOUD_LOGGING_ONLY

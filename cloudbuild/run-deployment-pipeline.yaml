@@ -1,32 +1,49 @@
 # Ten plik jest uruchamiany przez trigger nasłuchujący na wiadomości Pub/Sub.
 # Jego zadaniem jest uruchomienie gotowego, skompilowanego potoku wdrożeniowego.
 steps:
-- name:  'gcr.io/cloud-builders/gcloud'
-  id: 'Trigger Deployment Pipeline'
+- name: 'python:3.9'
+  id: 'Install-Dependencies'
+  entrypoint: 'pip'
+  args: ['install', '-r', 'requirements.txt', '--user']
+- name: 'python:3.9'
+  id: 'Trigger-Deployment-Pipeline'
+  waitFor: ['Install-Dependencies']
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      # Sprawdzamy, czy udało się odczytać ID modelu.
+      # Sprawdzamy, czy zmienna podstawiana z triggera została przekazana.
       if [ -z "$_MODEL_RESOURCE_NAME" ]; then
         echo "Błąd: Zmienna _MODEL_RESOURCE_NAME jest pusta."
         echo "Upewnij się, że w triggerze Cloud Build zdefiniowano podstawienie:"
+        echo "_MODEL_RESOURCE_NAME = \$(body.message.attributes.model_resource_name)"
         exit 1
       fi
 
-      echo "Uruchamianie wdrożenia dla modelu:  $_MODEL_RESOURCE_NAME"
+      echo "Otrzymano ID modelu: $_MODEL_RESOURCE_NAME"
+      echo "Aktualizowanie pliku z parametrami /config/deployment-params.json..."
+      # Instalujemy narzędzie 'jq' do edycji plików JSON
+      apt-get update > /dev/null && apt-get install -y jq
 
-      # Uruchamiamy gotowy potok z GCS, przekazując wszystkie wymagane parametry.
-      gcloud ai pipelines run \
-        --pipeline=gs://vertex-ai-bucket-s25537/pipelines/deployment_pipeline.json \
+      # Używamy jq, aby zaktualizować pole 'model_resource_name' w pliku szablonu
+      # i zapisać wynik do nowego pliku params.json
+      jq --arg model_id "$_MODEL_RESOURCE_NAME" \
+        '.parameter_values.model_resource_name = $model_id' \
+        config/deployment-params.json > params.json
+
+      echo "Zawartość pliku params.json:"
+      cat params.json
+
+      echo "Uruchamianie skryptu trigger_pipeline.py..."
+
+      # Uruchamiamy istniejący skrypt, przekazując mu ścieżkę do nowo utworzonego pliku.
+      python3 03-vertex-ai-pipelines/trigger_pipeline.py \
+        --project-id=$PROJECT_ID \
         --region=$_REGION \
-        --project=$PROJECT_ID \
+        --pipeline-spec-uri=gs://vertex-ai-bucket-s25537/pipelines/deployment_pipeline.json \
         --display-name="run-deployment-pubsub-$BUILD_ID" \
         --service-account=$_SERVICE_ACCOUNT \
-        --parameter=model_resource_name=" $_MODEL_RESOURCE_NAME" \
-        --parameter=project_id="$PROJECT_ID" \
-        --parameter=region="$_REGION" \
-        --parameter=endpoint_name="$_ENDPOINT_NAME"
+        --parameter-file=params.json
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -1,43 +1,16 @@
 # Ten plik jest uruchamiany przez trigger nasłuchujący na wiadomości Pub/Sub.
 # Jego zadaniem jest uruchomienie gotowego, skompilowanego potoku wdrożeniowego.
 steps:
-- name: 'gcr.io/cloud-builders/gcloud'
-  id: 'Debug-Step'
-  entrypoint: 'bash'
-  args:
-    - '-c'
-    - |
-      echo "--- KROK DIAGNOSTYCZNY ---"
-      echo ""
-      echo "1. Wartość zmiennej podstawianej _MODEL_RESOURCE_NAME:"
-      echo "-->$_MODEL_RESOURCE_NAME<--"
-      echo ""
-      echo "2. Surowa zawartość wiadomości z Pub/Sub (zmienna \$\$BODY, zakodowana w base64):"
-      echo "-->$$BODY<--"
-      echo ""
-      echo "3. Zdekodowana zawartość wiadomości (jeśli istnieje):"
-      # Zainstaluj jq do ładnego formatowania JSON
-      apt-get update > /dev/null && apt-get install -y jq > /dev/null
-      DECODED_BODY=$(echo $$BODY | base64 -d | jq .)
-      echo "$$DECODED_BODY"
-      echo ""
-      echo "--- KONIEC KROKU DIAGNOSTYCZNEGO ---"
 - name:  'gcr.io/cloud-builders/gcloud'
   id: 'Trigger Deployment Pipeline'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      # Wiadomość z Pub/Sub jest dostępna w zmiennej $$BODY, zakodowana w base64.
-      # Dekodujemy ją i wyciągamy ID modelu za pomocą narzędzia `jq`.
-      # Najpierw instalujemy jq.
-      apt-get update && apt-get install -y jq
-
-      MODEL_RESOURCE_NAME=$(echo $$BODY | base64 -d | jq -r .model_resource_name)
-      
       # Sprawdzamy, czy udało się odczytać ID modelu.
-      if [ -z " $_MODEL_RESOURCE_NAME" ] || [ " $_MODEL_RESOURCE_NAME" == "null" ]; then
-        echo "Błąd: Nie udało się odczytać ID modelu z wiadomości Pub/Sub."
+      if [ -z "$_MODEL_RESOURCE_NAME" ]; then
+        echo "Błąd: Zmienna _MODEL_RESOURCE_NAME jest pusta."
+        echo "Upewnij się, że w triggerze Cloud Build zdefiniowano podstawienie:"
         exit 1
       fi
 

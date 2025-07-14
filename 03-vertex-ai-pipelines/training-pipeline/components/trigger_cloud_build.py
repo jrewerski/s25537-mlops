@@ -3,9 +3,7 @@ import sys
 from kfp.dsl import component
 
 @component(
-    # --- KLUCZOWA ZMIANA ---
-    # Zmieniamy obraz na jego starszą, stabilną wersję, która nie ma problemu
-    # z "externally-managed-environment".
+    # Używamy tego samego obrazu, aby przetestować go do granic możliwości
     base_image="google/cloud-sdk:slim",
 )
 def trigger_cloud_build(
@@ -15,55 +13,40 @@ def trigger_cloud_build(
     region: str = "global",
 ):
     """
-    Wywołuje trigger Cloud Build z dodatkowymi krokami diagnostycznymi.
+    ULTRA-PROSTA WERSJA DIAGNOSTYCZNA.
+    Sprawdza, czy w ogóle można uruchomić jakiekolwiek polecenie systemowe.
     """
+    print("--- ROZPOCZYNAM TEST ŚRODOWISKA ---")
     
-    def run_command(cmd_args):
-        """Funkcja pomocnicza do uruchamiania poleceń i drukowania ich wyjścia."""
-        print(f"\n--- Uruchamiam polecenie: {' '.join(cmd_args)} ---")
-        process = subprocess.run(cmd_args, capture_output=True, text=True)
+    try:
+        print("\n--- TEST 1: Sprawdzanie bieżącego katalogu (pwd) ---")
+        # Używamy check=True, aby komponent zakończył się błędem, jeśli polecenie zawiedzie
+        subprocess.run(["pwd"], check=True, capture_output=True, text=True)
+        print("Test 1 ZAKOŃCZONY SUKCESEM.")
+
+        print("\n--- TEST 2: Listowanie zawartości katalogu głównego (ls -la /) ---")
+        subprocess.run(["ls", "-la", "/"], check=True, capture_output=True, text=True)
+        print("Test 2 ZAKOŃCZONY SUKCESEM.")
         
-        if process.stdout:
-            print("--- stdout ---")
-            print(process.stdout)
+        print("\n--- TEST 3: Listowanie zawartości bieżącego katalogu (ls -la .) ---")
+        subprocess.run(["ls", "-la", "."], check=True, capture_output=True, text=True)
+        print("Test 3 ZAKOŃCZONY SUKCESEM.")
+
+        print("\n--- TEST ŚRODOWISKA ZAKOŃCZONY SUKCESEM ---")
         
-        if process.stderr:
-            print("--- stderr ---")
-            print(process.stderr)
-        
-        if process.returncode == 0:
-            print("Polecenie zakończone sukcesem.")
-        else:
-            print(f"BŁĄD: Polecenie zakończone z kodem wyjścia {process.returncode}")
-            
-        return process
+        # Celowo powodujemy błąd, aby zatrzymać potok tutaj i nie iść dalej.
+        # Chcemy tylko zobaczyć logi z powyższych testów.
+        print("\nCelowe zatrzymanie potoku, aby sprawdzić logi. To nie jest prawdziwy błąd.")
+        sys.exit(1)
 
-    # --- Krok 1: Sprawdzenie, czy gcloud jest dostępne ---
-    print("--- KROK DIAGNOSTYCZNY 1: Sprawdzanie wersji gcloud ---")
-    version_check = run_command(["gcloud", "--version"])
-    if version_check.returncode != 0:
-        print("Krytyczny błąd: Nie można uruchomić 'gcloud --version'.")
-        sys.exit(version_check.returncode)
-
-    # --- Krok 2: Sprawdzenie, na jakim koncie serwisowym działa komponent ---
-    print("\n--- KROK DIAGNOSTYCZNY 2: Sprawdzanie uwierzytelnienia ---")
-    auth_check = run_command(["gcloud", "auth", "list"])
-    if auth_check.returncode != 0:
-        print("Krytyczny błąd: Nie można sprawdzić uwierzytelnienia 'gcloud auth list'.")
-        sys.exit(auth_check.returncode)
-
-    # --- Krok 3: Próba uruchomienia triggera ---
-    print("\n--- KROK GŁÓWNY 3: Uruchamianie triggera Cloud Build ---")
-    trigger_cmd = [
-        "gcloud", "builds", "triggers", "run", trigger_id,
-        f"--project={project_id}",
-        f"--region={region}",
-        f"--substitutions=_MODEL_RESOURCE_NAME={model_resource_name}"
-    ]
-    trigger_run = run_command(trigger_cmd)
-    
-    # Zakończ z kodem błędu, jeśli ostatnie polecenie zawiodło
-    if trigger_run.returncode != 0:
-        print("\nFinalne polecenie uruchomienia triggera nie powiodło się.")
-        sys.exit(trigger_run.returncode)
-
+    except subprocess.CalledProcessError as e:
+        print(f"\n--- KRYTYCZNY BŁĄD PODCZAS TESTU ŚRODOWISKA ---")
+        print(f"Polecenie: {e.cmd}")
+        print(f"Kod wyjścia: {e.returncode}")
+        print(f"Stdout: {e.stdout}")
+        print(f"Stderr: {e.stderr}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n--- KRYTYCZNY BŁĄD OGÓLNY ---")
+        print(e)
+        sys.exit(1)

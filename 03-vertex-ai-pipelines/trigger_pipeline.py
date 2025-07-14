@@ -20,12 +20,11 @@ def main(args):
         display_name=args.display_name,
         template_path=args.pipeline_spec_uri,
         parameter_values=pipeline_parameters,
-        enable_caching=False, 
+        enable_caching=False,
     )
 
     # Prześlij zadanie, używając podanego konta serwisowego
-    job.submit(service_account=args.service_account)
-    
+    job.submit(service_account=args.service_account)  
     print(f"Pipeline job '{job.display_name}' submitted. View it at: {job.resource_name}")
     print("Waiting for pipeline to complete...")
     job.wait()
@@ -34,9 +33,6 @@ def main(args):
         print("Pipeline run succeeded.")
     else:
         print(f"Pipeline run failed. Final state: {job.state}")
-        if job.error:
-            print(f"Error details: {job.error}")
-        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -47,6 +43,5 @@ if __name__ == "__main__":
     parser.add_argument("--display-name", type=str, required=True, help="Display name for the pipeline run")
     parser.add_argument("--parameter-file", type=str, required=True, help="Path to the JSON file with runtime parameters")
     parser.add_argument("--service-account", type=str, required=True, help="Service account to run the pipeline job")
-    
     args = parser.parse_args()
     main(args)

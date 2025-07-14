@@ -47,7 +47,7 @@ def training_pipeline(
     model_labels_str: str = '{}',
     test_split_ratio: float = 0.3,
     min_accuracy_threshold: float = 95.0,
-    cd_trigger_id: str = "trigger-deploy"
+    cd_trigger_id: str = "trigger-deploy",
 ):
     """Definiuje przepływ pracy w potoku z warunkową rejestracją."""
     get_data_task = get_data(gcs_input_path=gcs_data_path)
@@ -85,13 +85,13 @@ def training_pipeline(
             model_labels=model_labels_str
         )
     # Wywołaj trigger Cloud Build z ID zarejestrowanego modelu
-        trigger_cd_pipeline_task = trigger_cloud_build(
-            project_id=project_id,
-            trigger_id=cd_trigger_id,
-            region=region,
-            model_resource_name=register_model_task.outputs["model_resource_name"]
-        )
 
+    trigger_cd_pipeline_task = trigger_cloud_build(
+        project_id=project_id,
+        trigger_id=cd_trigger_id,
+        region=region,
+        model_resource_name=register_model_task.outputs["model_resource_name"]
+    )
 
 if __name__ == '__main__':
     print("Kompilacja potoku")

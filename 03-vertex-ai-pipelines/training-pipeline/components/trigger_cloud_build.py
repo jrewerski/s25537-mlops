@@ -1,7 +1,6 @@
 from kfp.dsl import component
 
 @component(
-    # Używamy oficjalnego obrazu z Google Cloud SDK, który zawiera gcloud
     base_image="google/cloud-sdk:slim",
 )
 def trigger_cloud_build(

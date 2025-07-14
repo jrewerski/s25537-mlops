@@ -1,7 +1,7 @@
 from kfp.dsl import component
 
 @component(
-    base_image="gcr.io/google.com/cloudsdktool/google-cloud-cli:slim"
+    base_image="gcr.io/google.com/cloudsdktool/google-cloud-cli:latest"
 
 )
 def trigger_cloud_build(
@@ -14,7 +14,7 @@ def trigger_cloud_build(
     Wywołuje trigger Cloud Build za pomocą polecenia gcloud.
     """
     import subprocess
-
+    import sys 
     # Budujemy polecenie gcloud
     cmd = [
         "gcloud", "builds", "triggers", "run", trigger_id,

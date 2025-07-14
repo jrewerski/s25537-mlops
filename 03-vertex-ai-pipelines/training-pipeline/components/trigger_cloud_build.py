@@ -1,38 +1,43 @@
 from kfp.dsl import component
 
 @component(
-    base_image="python:3.9",
-    packages_to_install=["google-cloud-build==3.20.0"],
+    # Używamy oficjalnego obrazu z Google Cloud SDK, który zawiera gcloud
+    base_image="google/cloud-sdk:slim",
 )
 def trigger_cloud_build(
     project_id: str,
     trigger_id: str,
     model_resource_name: str,
-) -> str:
+    region: str
+):
     """
-    Wywołuje trigger Cloud Build i przekazuje ID modelu jako podstawienie.
+    Wywołuje trigger Cloud Build za pomocą polecenia gcloud.
     """
-    from google.cloud.devtools import cloudbuild_v1
-    
-    client = cloudbuild_v1.CloudBuildClient()
-    
-    # Definicja podstawień (substitutions) dla triggera
-    # Zostaną one scalone z podstawieniami zdefiniowanymi w triggerze.
-    substitutions = {
-        "_MODEL_RESOURCE_NAME": model_resource_name,
-    }
-    
-    request = cloudbuild_v1.RunBuildTriggerRequest(
-        project_id=project_id,
-        trigger_id=trigger_id,
-        source=None,  
-        substitutions=substitutions
-    )
+    import subprocess
+    import sys
 
-    operation = client.run_build_trigger(request=request)
-    build_info = operation.metadata.build
+    # Budujemy polecenie gcloud
+    cmd = [
+        "gcloud", "builds", "triggers", "run", trigger_id,
+        f"--project={project_id}",
+        f"--region={region}",
+        f"--substitutions=_MODEL_RESOURCE_NAME={model_resource_name}"
+    ]
     
-    print(f"Pomyślnie uruchomiono Cloud Build. ID budowania: {build_info.id}")
-    print(f"URL logów: {build_info.log_url}")
+    print(f"Uruchamiam polecenie: {' '.join(cmd)}")
+
+    # Uruchamiamy proces i przechwytujemy jego wyjście
+    process = subprocess.run(cmd, capture_output=True, text=True)
     
-    return build_info.log_url
+    # Drukujemy logi z gcloud, co jest bardzo pomocne przy debugowaniu
+    print("--- gcloud stdout ---")
+    print(process.stdout)
+    
+    if process.stderr:
+        print("--- gcloud stderr ---")
+        print(process.stderr)
+    
+    # Sprawdzamy, czy polecenie zakończyło się sukcesem
+    if process.returncode != 0:
+        print("Błąd podczas uruchamiania triggera Cloud Build.", file=sys.stderr)
+        sys.exit(process.returncode)

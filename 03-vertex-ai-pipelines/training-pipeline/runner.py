@@ -89,6 +89,7 @@ def training_pipeline(
         trigger_cd_pipeline_task = trigger_cloud_build(
             project_id=project_id,
             trigger_id=cd_trigger_id,
+            region=region,
             model_resource_name=register_model_task.outputs["model_resource_name"]
         )
 

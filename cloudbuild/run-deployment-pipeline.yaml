@@ -1,6 +1,18 @@
 # Ten plik jest uruchamiany przez trigger nasłuchujący na wiadomości Pub/Sub.
 # Jego zadaniem jest uruchomienie gotowego, skompilowanego potoku wdrożeniowego.
 steps:
+# KROK DIAGNOSTYCZNY: Drukujemy zawartość wiadomości z Pub/Sub
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'Debug PubSub Message'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      echo "--- SUROWA ZAWARTOŚĆ WIADOMOŚCI (BASE64) ---"
+      echo "$$BODY"
+      echo "--- ZDEKODOWANA ZAWARTOŚĆ WIADOMOŚCI ---"
+      echo $$BODY | base64 -d | jq .
+      echo "-------------------------------------------"
 - name:  'gcr.io/cloud-builders/gcloud'
   id: 'Trigger Deployment Pipeline'
   entrypoint: 'bash'
@@ -33,5 +45,6 @@ steps:
         --parameter=project_id="$PROJECT_ID" \
         --parameter=region="$_REGION" \
         --parameter=endpoint_name="$_ENDPOINT_NAME"
+  waitFor: ['Debug PubSub Message'] 
 options:
   logging: CLOUD_LOGGING_ONLY

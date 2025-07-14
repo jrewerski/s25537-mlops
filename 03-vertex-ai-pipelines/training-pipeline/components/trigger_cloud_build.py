@@ -3,8 +3,8 @@ from kfp.dsl import component
 from typing import NamedTuple
 
 @component(
-    base_image="python:3.9"
-    packages_to_install=["google-cloud-build==3.20.0", "gcsfs", "fsspec", "pyarrow"]
+    base_image="python:3.9",
+    packages_to_install=["google-cloud-build", "gcsfs", "fsspec", "pyarrow"],
 )
 def trigger_cloud_build(
     project_id: str,

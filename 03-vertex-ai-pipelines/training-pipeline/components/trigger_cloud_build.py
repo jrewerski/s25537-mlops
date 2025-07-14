@@ -1,4 +1,4 @@
-mport sys
+
 from kfp.dsl import component
 from typing import NamedTuple
 

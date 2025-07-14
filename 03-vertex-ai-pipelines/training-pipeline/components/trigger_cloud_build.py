@@ -3,9 +3,10 @@ import sys
 from kfp.dsl import component
 
 @component(
-    # Używamy obrazu, który na pewno zawiera gcloud.
-    # To jest kluczowe, aby wykluczyć problemy ze środowiskiem.
-    base_image="gcr.io/google.com/cloudsdktool/google-cloud-cli:slim",
+    # --- KLUCZOWA ZMIANA ---
+    # Zmieniamy obraz na jego starszą, stabilną wersję, która nie ma problemu
+    # z "externally-managed-environment".
+    base_image="google/cloud-sdk:slim",
 )
 def trigger_cloud_build(
     project_id: str,

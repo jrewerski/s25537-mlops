@@ -32,7 +32,6 @@ if PREBUILT_IMAGE_URI:
     evaluate_svc_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     register_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
     get_parent_model.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
-    trigger_cloud_build.component_spec.implementation.container.image = PREBUILT_IMAGE_URI
 
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(

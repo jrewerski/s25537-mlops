@@ -1,7 +1,7 @@
 # Ten plik jest uruchamiany przez trigger nasłuchujący na wiadomości Pub/Sub.
 # Jego zadaniem jest uruchomienie gotowego, skompilowanego potoku wdrożeniowego.
 steps:
-- name: 'gcr.io/google-cloud-builders/gcloud'
+- name:  'gcr.io/cloud-builders/gcloud'
   id: 'Trigger Deployment Pipeline'
   entrypoint: 'bash'
   args:

@@ -1,33 +1,36 @@
+# Ten plik jest uruchamiany przez trigger nasłuchujący na wiadomości Pub/Sub.
+# Jego zadaniem jest uruchomienie gotowego, skompilowanego potoku wdrożeniowego.
 steps:
-- name: 'python:3.9'
-  entrypoint: 'pip'
-  args: ['install', '-r', 'requirements.txt', '--user']
-  id: 'Install Dependencies'
-
-  # Krok kompilacji potoku
-- name: 'python:3.9'
-  id: Compile Deployment Pipeline
-  entrypoint: 'python3'
-  args: ['03-vertex-ai-pipelines/deployment-pipeline/runner.py']
-
-# Krok przesłania definicji do GCS
-- name: 'gcr.io/cloud-builders/gsutil'
-  id: Upload to GCS
-  args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/deployment_pipeline.json']
-  waitFor: ['Compile Deployment Pipeline']
-
-- name: 'python:3.9'
-  id: Trigger Deployment Pipeline
-  entrypoint: 'python3'
+- name: 'gcr.io/google-cloud-builders/gcloud'
+  id: 'Trigger Deployment Pipeline'
+  entrypoint: 'bash'
   args:
-      - '03-vertex-ai-pipelines/trigger_pipeline.py' 
-      - '--project-id=$PROJECT_ID'
-      - '--region=$_REGION'
-      - '--pipeline-spec-uri=$_PIPELINE_GCS_PATH/deployment_pipeline.json'
-      - '--display-name=run-deployment-${SHORT_SHA}'
-      - '--service-account=$_SERVICE_ACCOUNT'
-      - '--parameter-file=$_PARAMETER_FILE'      
+    - '-c'
+    - |
+      # Wiadomość z Pub/Sub jest dostępna w zmiennej $$BODY, zakodowana w base64.
+      # Dekodujemy ją i wyciągamy ID modelu za pomocą narzędzia `jq`.
+      # Najpierw instalujemy jq.
+      apt-get update && apt-get install -y jq
 
-  waitFor: ['Upload to GCS']
-options:
+      MODEL_ID=$(echo $$BODY | base64 -d | jq -r .model_resource_name)
+      
+      # Sprawdzamy, czy udało się odczytać ID modelu.
+      if [ -z "$$MODEL_ID" ] || [ "$$MODEL_ID" == "null" ]; then
+        echo "Błąd: Nie udało się odczytać ID modelu z wiadomości Pub/Sub."
+        exit 1
+      fi
+
+      echo "Uruchamianie wdrożenia dla modelu: $$MODEL_ID"
+
+      # Uruchamiamy gotowy potok z GCS, przekazując wszystkie wymagane parametry.
+      gcloud ai pipelines run \
+        --pipeline=gs://vertex-ai-bucket-s25537/pipelines/deployment_pipeline.json \
+        --region=$_REGION \
+        --project=$PROJECT_ID \
+        --display-name="run-deployment-pubsub-$BUILD_ID" \
+        --service-account=$_SERVICE_ACCOUNT \
+        --parameter=model_resource_name="$$MODEL_ID" \
+        --parameter=project_id="$PROJECT_ID" \
+        --parameter=region="$_REGION" \
+        --parameter=endpoint_name="$_ENDPOINT_NAME"
   logging: CLOUD_LOGGING_ONLY

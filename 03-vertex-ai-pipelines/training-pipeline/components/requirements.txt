@@ -9,4 +9,4 @@ docstring-parser
 urllib3
 protobuf
 google-cloud-aiplatform==1.55.0
-google-cloud-build
+google-cloud-pubsub==2.13.4

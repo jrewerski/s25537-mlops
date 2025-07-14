@@ -1,0 +1,33 @@
+steps:
+- name: 'python:3.9'
+  entrypoint: 'pip'
+  args: ['install', '-r', 'requirements.txt', '--user']
+  id: 'Install Dependencies'
+
+  # Krok kompilacji potoku
+- name: 'python:3.9'
+  id: Compile Deployment Pipeline
+  entrypoint: 'python3'
+  args: ['03-vertex-ai-pipelines/deployment-pipeline/runner.py']
+
+# Krok przesłania definicji do GCS
+- name: 'gcr.io/cloud-builders/gsutil'
+  id: Upload to GCS
+  args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/deployment_pipeline.json']
+  waitFor: ['Compile Deployment Pipeline']
+
+- name: 'python:3.9'
+  id: Trigger Deployment Pipeline
+  entrypoint: 'python3'
+  args:
+      - '03-vertex-ai-pipelines/trigger_pipeline.py' 
+      - '--project-id=$PROJECT_ID'
+      - '--region=$_REGION'
+      - '--pipeline-spec-uri=$_PIPELINE_GCS_PATH/deployment_pipeline.json'
+      - '--display-name=run-deployment-${SHORT_SHA}'
+      - '--service-account=$_SERVICE_ACCOUNT'
+      - '--parameter-file=$_PARAMETER_FILE'      
+
+  waitFor: ['Upload to GCS']
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -34,7 +34,6 @@ def deployment_pipeline(
 
     endpoint_create = EndpointCreateOp(
         project = project_id,
-        location = region,
         display_name = endpoint_name
     )
     

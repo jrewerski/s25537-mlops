@@ -17,3 +17,5 @@ steps:
   id: Upload to GCS
   args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/deployment_pipeline.json']
   waitFor: ['Compile Deployment Pipeline']
+options:
+  logging: CLOUD_LOGGING_ONLY

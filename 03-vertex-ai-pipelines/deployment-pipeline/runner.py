@@ -15,7 +15,7 @@ from kfp import compiler
 from google.cloud import aiplatform
 from typing import NamedTuple
 from google_cloud_pipeline_components.v1.model import ModelGetOp
-from google_cloud_pipeline_components.v1.endpoint import GetOrCreateEndpointOp, ModelDeployOp
+from google_cloud_pipeline_components.v1.endpoint import ModelDeployOp
 
 @component(
     base_image="python:3.9",

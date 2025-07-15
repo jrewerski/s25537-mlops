@@ -33,7 +33,8 @@ def get_or_create_endpoint(
     Jeśli nie, tworzy nowy.
     """
     import logging
-
+    from google.cloud import aiplatform
+    
     logging.getLogger().setLevel(logging.INFO)
     aiplatform.init(project=project, location=location)
 

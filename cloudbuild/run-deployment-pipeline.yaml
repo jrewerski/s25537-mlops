@@ -40,7 +40,7 @@ steps:
       python3 03-vertex-ai-pipelines/trigger_pipeline.py \
         --project-id=$PROJECT_ID \
         --region=$_REGION \
-        --pipeline-spec-uri=gs://vertex-ai-bucket-s25537/pipelines/deployment_pipeline.json \
+        --pipeline-spec-uri=$_PIPELINE_GCS_PATH/deployment_pipeline.json \
         --display-name="run-deployment-pubsub-$BUILD_ID" \
         --service-account=$_SERVICE_ACCOUNT \
         --parameter-file=params.json

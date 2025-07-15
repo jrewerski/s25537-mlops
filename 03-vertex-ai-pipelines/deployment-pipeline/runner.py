@@ -17,6 +17,44 @@ from typing import NamedTuple
 from google_cloud_pipeline_components.v1.model import ModelGetOp
 from google_cloud_pipeline_components.v1.endpoint import GetOrCreateEndpointOp, ModelDeployOp
 
+@component(
+    base_image="python:3.9",
+    # Upewnij się, że wersja jest zgodna z tą w Twoim środowisku
+    packages_to_install=["google-cloud-aiplatform==1.55.0"] 
+)
+def get_or_create_endpoint(
+    project: str,
+    location: str,
+    display_name: str,
+    endpoint: Output[Artifact], # Komponent zwraca artefakt typu Endpoint
+):
+    """
+    Sprawdza, czy endpoint o podanej nazwie istnieje. Jeśli tak, używa go.
+    Jeśli nie, tworzy nowy.
+    """
+    import logging
+
+    logging.getLogger().setLevel(logging.INFO)
+    aiplatform.init(project=project, location=location)
+
+    # Szukamy istniejącego endpointu
+    endpoints = aiplatform.Endpoint.list(
+        filter=f'display_name="{display_name}"',
+        order_by="create_time desc"
+    )
+
+    if endpoints:
+        endpoint_resource = endpoints[0]
+        logging.info(f"Endpoint '{display_name}' już istnieje. Używam: {endpoint_resource.resource_name}")
+    else:
+        logging.info(f"Endpoint '{display_name}' nie został znaleziony. Tworzę nowy.")
+        endpoint_resource = aiplatform.Endpoint.create(display_name=display_name)
+
+    # Zapisujemy metadane artefaktu, aby kolejne kroki mogły go użyć
+    endpoint.uri = f"https://{location}-aiplatform.googleapis.com/v1/{endpoint_resource.resource_name}"
+    endpoint.metadata["resourceName"] = endpoint_resource.resource_name
+
+
 @pipeline(
     name="deployment-pipeline",
     description="Potok tworzy endpoint i wdraża na nim podany model",
@@ -32,7 +70,7 @@ def deployment_pipeline(
     Znajduje istniejący endpoint o podanej nazwie lub tworzy nowy,
     a następnie wdraża na nim podany model.
     """
-    get_or_create_endpoint_task = GetOrCreateEndpointOp(
+    get_or_create_endpoint_task = get_or_create_endpoint(
         project = project_id,
         location = region,
         display_name = endpoint_name

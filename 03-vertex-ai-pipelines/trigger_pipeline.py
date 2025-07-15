@@ -34,7 +34,6 @@ def main(args):
     else:
         print(f"Pipeline run failed. Final state: {job.state}")
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Trigger a Vertex AI Pipeline")
     parser.add_argument("--project-id", type=str, required=True, help="Google Cloud Project ID")

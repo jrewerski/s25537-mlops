@@ -15,7 +15,7 @@ from kfp import compiler
 from google.cloud import aiplatform
 from typing import NamedTuple
 from google_cloud_pipeline_components.v1.model import ModelGetOp
-from google_cloud_pipeline_components.v1.endpoint import EndpointCreateOp, ModelDeployOp
+from google_cloud_pipeline_components.v1.endpoint import GetOrCreateEndpointOp, ModelDeployOp
 
 
 
@@ -30,14 +30,16 @@ def deployment_pipeline(
     project_id: str = "mlops-on-gcp-s25537",
     region: str = "us-central1",
 ):
-    """Tworzy endpoint i wdraża na nim podany model."""
-
-    endpoint_create = EndpointCreateOp(
+    """
+    Znajduje istniejący endpoint o podanej nazwie lub tworzy nowy,
+    a następnie wdraża na nim podany model.
+    """
+    get_or_create_endpoint_task = GetOrCreateEndpointOp(
         project = project_id,
         location = region,
         display_name = endpoint_name
     )
-    
+
     get_model_op = ModelGetOp(
         model_name=model_resource_name,
         location = region
@@ -45,7 +47,7 @@ def deployment_pipeline(
 
     model_deploy = ModelDeployOp(
         model=get_model_op.outputs["model"],
-        endpoint = endpoint_create.outputs["endpoint"],
+        endpoint = get_or_create_endpoint_task.outputs["endpoint"],
         deployed_model_display_name = "Predict-Puffin", 
         dedicated_resources_machine_type="n1-standard-2",
         dedicated_resources_min_replica_count=1,

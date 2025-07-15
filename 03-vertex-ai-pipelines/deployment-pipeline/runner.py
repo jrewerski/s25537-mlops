@@ -38,7 +38,8 @@ def deployment_pipeline(
     )
     
     get_model_op = ModelGetOp(
-        model_name=model_resource_name
+        model_name=model_resource_name,
+        project = project_id
     )
 
     model_deploy = ModelDeployOp(

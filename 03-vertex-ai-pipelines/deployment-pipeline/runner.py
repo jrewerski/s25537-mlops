@@ -38,8 +38,7 @@ def deployment_pipeline(
     )
     
     get_model_op = ModelGetOp(
-        model_name=model_resource_name,
-        location = region,
+        model_name=model_resource_name
     )
 
     model_deploy = ModelDeployOp(

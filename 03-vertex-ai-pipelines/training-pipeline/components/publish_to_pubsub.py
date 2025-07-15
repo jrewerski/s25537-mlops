@@ -17,6 +17,8 @@ def publish_to_pubsub(
     from google.cloud import pubsub_v1
 
     try:
+        model_id = model_resource_name.split('/')[-1]
+        print(f"ID modelu: {model_id}")
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(project_id, topic_name)
 
@@ -30,9 +32,9 @@ def publish_to_pubsub(
         # Klucz atrybutu ("model_resource_name") musi być taki sam,
         # jak ten użyty w konfiguracji triggera Cloud Build.
         future = publisher.publish(
-            topic_path, 
-            data, 
-            model_resource_name=model_resource_name
+            topic_path,
+            data,
+            model_resource_name=model_id
         )
         
         # Czekamy na pomyślne opublikowanie i pobieramy ID wiadomości

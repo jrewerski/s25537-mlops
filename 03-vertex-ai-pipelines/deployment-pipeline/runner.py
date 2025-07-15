@@ -34,12 +34,13 @@ def deployment_pipeline(
 
     endpoint_create = EndpointCreateOp(
         project = project_id,
+        location = region,
         display_name = endpoint_name
     )
     
     get_model_op = ModelGetOp(
         model_name=model_resource_name,
-        project = project_id
+        location = region
     )
 
     model_deploy = ModelDeployOp(

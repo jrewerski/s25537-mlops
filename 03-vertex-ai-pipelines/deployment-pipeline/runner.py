@@ -17,8 +17,6 @@ from typing import NamedTuple
 from google_cloud_pipeline_components.v1.model import ModelGetOp
 from google_cloud_pipeline_components.v1.endpoint import GetOrCreateEndpointOp, ModelDeployOp
 
-
-
 @pipeline(
     name="deployment-pipeline",
     description="Potok tworzy endpoint i wdraża na nim podany model",

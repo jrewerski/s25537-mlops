@@ -26,7 +26,8 @@ def preprocess_data(
     """Czyści, imputuje, dzieli i zapisuje dane jako artefakty treningowe/testowe."""
 
     df = pd.read_csv(input_data.path)
-    df.loc[336, 'sex'] = 'FEMALE'
+    if 336 in df.index:
+        df.loc[336, 'sex'] = 'FEMALE'
     numerical_cols = ['culmen_length_mm', 'culmen_depth_mm', 'flipper_length_mm', 'body_mass_g']
     for col in numerical_cols:
         df[col] = df[col].fillna(df[col].median())

@@ -43,13 +43,15 @@ def test_preprocess_data_logic(temp_dir, sample_input_data):
     """
     input_dir, output_dir = temp_dir
     
-    # Symulacja artefaktów wejściowych i wyjściowych KFP
-    input_dataset = Dataset(uri=sample_input_data, path=sample_input_data)
+    # POPRAWKA: Usunięto argument `path` z konstruktorów Dataset.
+    # W nowszych wersjach KFP, atrybut .path jest automatycznie
+    # zarządzany na podstawie .uri.
+    input_dataset = Dataset(uri=sample_input_data)
     
     train_output_path = output_dir / "train.csv"
     test_output_path = output_dir / "test.csv"
-    train_dataset = Dataset(uri=str(train_output_path), path=str(train_output_path))
-    test_dataset = Dataset(uri=str(test_output_path), path=str(test_output_path))
+    train_dataset = Dataset(uri=str(train_output_path))
+    test_dataset = Dataset(uri=str(test_output_path))
 
     # Wywołanie funkcji komponentu
     preprocess_data.python_func(
@@ -59,12 +61,12 @@ def test_preprocess_data_logic(temp_dir, sample_input_data):
         test_split_ratio=0.5
     )
 
-    # Sprawdzenie wyników
-    assert train_output_path.exists()
-    assert test_output_path.exists()
+    # Sprawdzenie wyników - odczytujemy pliki z atrybutu .path artefaktów wyjściowych
+    assert os.path.exists(train_dataset.path)
+    assert os.path.exists(test_dataset.path)
 
-    train_df = pd.read_csv(train_output_path)
-    test_df = pd.read_csv(test_output_path)
+    train_df = pd.read_csv(train_dataset.path)
+    test_df = pd.read_csv(test_dataset.path)
     
     combined_df = pd.concat([train_df, test_df])
 

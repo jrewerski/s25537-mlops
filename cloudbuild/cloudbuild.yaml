@@ -5,6 +5,20 @@ steps:
   args: ['install', '-r', 'requirements.txt', '--user']
   id: 'Install Dependencies'
 
+- name: 'python:3.9'
+  entrypoint: 'pip'
+  args: ['install', 'pytest', 'pandas', 'scikit-learn', 'kfp', '--user']
+  id: 'Install Test Dependencies'
+  waitFor: ['Install Dependencies']
+
+# Krok 2: Uruchomienie testów jednostkowych.
+# Ten krok zatrzyma budowanie, jeśli testy się nie powiodą.
+- name: 'python:3.9'
+  entrypoint: 'python3'
+  args: ['-m', 'pytest', '03-vertex-ai-pipelines/training-pipeline/tests/']
+  id: 'Run Unit Tests'
+  waitFor: ['Install Test Dependencies']
+
   # Krok 3: Budowanie obrazu Docker dla komponentów.
 - name: 'gcr.io/cloud-builders/docker'
   args:
@@ -13,6 +27,7 @@ steps:
     - '$_CUSTOM_COMPONENT_IMAGE_URI'
     - '$_COMPONENTS_DIR_PATH'
   id: 'Build Custom Component Image'
+  waitFor: ['Run Unit Tests']
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', '$_CUSTOM_COMPONENT_IMAGE_URI']

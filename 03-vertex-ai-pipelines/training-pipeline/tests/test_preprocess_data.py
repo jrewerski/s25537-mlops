@@ -18,8 +18,6 @@ def temp_dir(tmp_path):
 def sample_input_data(temp_dir):
     """
     Tworzy przykładowe dane wejściowe i zapisuje je do pliku CSV.
-    POPRAWKA: Zapewniono, że każda klasa 'species' ma co najmniej 2 członków,
-    aby umożliwić stratyfikację.
     """
     input_dir, _ = temp_dir
     data = {

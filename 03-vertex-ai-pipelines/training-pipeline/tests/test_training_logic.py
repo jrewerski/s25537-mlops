@@ -22,8 +22,6 @@ def processed_data(tmp_path):
         'species': ['Adelie', 'Adelie', 'Gentoo', 'Gentoo', 'Chinstrap', 'Chinstrap']
     }
     df = pd.DataFrame(data)
-    
-    # Zapisujemy dane do plików
     train_path = tmp_path / "train.csv"
     test_path = tmp_path / "test.csv"
     df.to_csv(train_path, index=False)

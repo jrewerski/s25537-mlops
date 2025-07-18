@@ -3,9 +3,6 @@ import pandas as pd
 from kfp.dsl import Dataset
 from pathlib import Path
 import os
-
-# Dzięki plikowi conftest.py, ten import zadziała poprawnie,
-# ponieważ katalog 'training-pipeline' został dodany do ścieżki systemowej.
 from components.preprocess_data import preprocess_data
 
 @pytest.fixture
@@ -19,16 +16,20 @@ def temp_dir(tmp_path):
 
 @pytest.fixture
 def sample_input_data(temp_dir):
-    """Tworzy przykładowe dane wejściowe i zapisuje je do pliku CSV."""
+    """
+    Tworzy przykładowe dane wejściowe i zapisuje je do pliku CSV.
+    POPRAWKA: Zapewniono, że każda klasa 'species' ma co najmniej 2 członków,
+    aby umożliwić stratyfikację.
+    """
     input_dir, _ = temp_dir
     data = {
-        'species': ['Adelie', 'Adelie', 'Gentoo', 'Chinstrap'],
-        'island': ['Torgersen', 'Biscoe', 'Biscoe', 'Dream'],
-        'culmen_length_mm': [39.1, 40.3, 46.1, 50.0],
-        'culmen_depth_mm': [18.7, 18.0, 13.2, 16.4],
-        'flipper_length_mm': [181.0, 195.0, 211.0, None], # Brakująca wartość
-        'body_mass_g': [3750.0, 3250.0, None, 3700.0], # Brakująca wartość
-        'sex': ['MALE', 'FEMALE', 'FEMALE', None] # Brakująca wartość
+        'species': ['Adelie', 'Adelie', 'Gentoo', 'Gentoo', 'Chinstrap', 'Chinstrap'],
+        'island': ['Torgersen', 'Biscoe', 'Biscoe', 'Biscoe', 'Dream', 'Dream'],
+        'culmen_length_mm': [39.1, 40.3, 46.1, 47.0, 50.0, 51.0],
+        'culmen_depth_mm': [18.7, 18.0, 13.2, 14.0, 16.4, 17.0],
+        'flipper_length_mm': [181.0, 195.0, 211.0, 212.0, None, 198.0],
+        'body_mass_g': [3750.0, 3250.0, None, 4500.0, 3700.0, 3800.0],
+        'sex': ['MALE', 'FEMALE', 'FEMALE', 'MALE', None, 'FEMALE']
     }
     df = pd.DataFrame(data)
     input_path = input_dir / "data.csv"
@@ -43,9 +44,6 @@ def test_preprocess_data_logic(temp_dir, sample_input_data):
     """
     input_dir, output_dir = temp_dir
     
-    # POPRAWKA: Usunięto argument `path` z konstruktorów Dataset.
-    # W nowszych wersjach KFP, atrybut .path jest automatycznie
-    # zarządzany na podstawie .uri.
     input_dataset = Dataset(uri=sample_input_data)
     
     train_output_path = output_dir / "train.csv"
@@ -61,7 +59,7 @@ def test_preprocess_data_logic(temp_dir, sample_input_data):
         test_split_ratio=0.5
     )
 
-    # Sprawdzenie wyników - odczytujemy pliki z atrybutu .path artefaktów wyjściowych
+    # Sprawdzenie wyników
     assert os.path.exists(train_dataset.path)
     assert os.path.exists(test_dataset.path)
 
@@ -77,4 +75,4 @@ def test_preprocess_data_logic(temp_dir, sample_input_data):
     assert 'island' not in combined_df.columns, "Oryginalna kolumna 'island' powinna zostać usunięta"
     assert len(train_df) > 0
     assert len(test_df) > 0
-    assert len(combined_df) == 4
+    assert len(combined_df) == 6

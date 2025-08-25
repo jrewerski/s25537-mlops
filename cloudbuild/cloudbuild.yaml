@@ -46,21 +46,24 @@ steps:
   # Krok 5: Przesłanie skompilowanej definicji potoku do GCS.
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/$_PIPELINE_NAME.json']
-  id: 'Upload Training Pipeline to GCS'
+  id: 'Upload Pipeline to GCS'
   waitFor: ['Compile training pipeline']
 
 # Krok 6: Kompilacja potoku wdrozeniowego 
 - name: 'python:3.9'
   id: 'Compile Deployment Pipeline'
-  entrypoint: 'python3'
-  args: ['03-vertex-ai-pipelines/deployment-pipeline/runner.py']
-  waitFor: ['Push Custom Component Image', 'Upload Training Pipeline to GCS']
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      python3 -c "from kfp import compiler; from os.path import dirname; from importlib import import_module; runner_path = '03-vertex-ai-pipelines/deployment-pipeline/runner.py'; module_name = '.'.join(dirname(runner_path).split('/') + ['runner']); pipeline_func = import_module(module_name).deployment_pipeline; compiler.Compiler().compile(pipeline_func=pipeline_func, package_path='deployment_pipeline.json')"
+  waitFor: ['Push Custom Component Image']
 
 # Krok 7 : Przesłanie skompilowanej definicji potoku do GCS.
 - name: 'gcr.io/cloud-builders/gsutil'
   id: 'Upload Deployment Pipeline to GCS'
-  args: ['cp', 'pipeline.json', '${_PIPELINE_GCS_PATH}/deployment_pipeline.json']
-  waitFor: ['Compile Deployment Pipeline',  'Upload Training Pipeline to GCS']
+  args: ['cp', 'deployment_pipeline.json', '${_PIPELINE_GCS_PATH}/deployment_pipeline.json']
+  waitFor: ['Compile Deployment Pipeline']
 
 # Krok 8: Uruchomienie potoku w Vertex AI za pomocą skryptu Python.
 - name: 'python:3.9' # Używamy obrazu z Pythonem

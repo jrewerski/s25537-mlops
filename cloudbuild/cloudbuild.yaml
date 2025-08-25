@@ -60,6 +60,7 @@ steps:
     - '--display-name=run-${_PIPELINE_NAME}-${SHORT_SHA}'
     - '--parameter-file=$_PARAMETER_FILE'
     - '--service-account=$_SERVICE_ACCOUNT'
+    - '--pipeline-root=$_PIPELINE_GCS_PATH'
   id: 'Trigger Vertex AI Pipeline'
   waitFor: ['Upload Pipeline to GCS']
 images:

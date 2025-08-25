@@ -19,6 +19,7 @@ def main(args):
     job = aiplatform.PipelineJob(
         display_name=args.display_name,
         template_path=args.pipeline_spec_uri,
+        pipeline_root=args.pipeline_root,
         parameter_values=pipeline_parameters,
         enable_caching=False,
     )
@@ -42,5 +43,6 @@ if __name__ == "__main__":
     parser.add_argument("--display-name", type=str, required=True, help="Display name for the pipeline run")
     parser.add_argument("--parameter-file", type=str, required=True, help="Path to the JSON file with runtime parameters")
     parser.add_argument("--service-account", type=str, required=True, help="Service account to run the pipeline job")
+    parser.add_argument("--pipeline-root", type=str, required=True, help="GCS URI for the pipeline root directory")
     args = parser.parse_args()
     main(args)

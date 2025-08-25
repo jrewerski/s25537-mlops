@@ -36,12 +36,11 @@ if PREBUILT_IMAGE_URI:
 # --- Definicja głównego potoku Vertex AI ---
 @pipeline(
     name="training-pipeline",
-    description="Potok trenujący i rejestrujący model SVC.",
-    pipeline_root="gs://vertex-ai-bucket-s25537",
+    description="Potok trenujący i rejestrujący model SVC."
 )
 def training_pipeline(
-    gcs_data_path: str = "gs://data-s25537/penguins.csv",
-    project_id: str = "mlops-on-gcp-s25537",
+    gcs_data_path: str = "",
+    project_id: str = "",
     region: str = "us-central1",
     model_name: str = "default-model",
     model_labels_str: str = '{}',

@@ -44,3 +44,9 @@ variable "github_user_or_org" {
   description = "Twój login użytkownika lub nazwa organizacji na GitHub."
   type        = string
 }
+
+variable "deployment_endpoint_name" {
+  description = "Nazwa punktu końcowego (Endpoint) w Vertex AI, na którym wdrażany jest model."
+  type        = string
+  default     = "puffin-endpoint"
+}

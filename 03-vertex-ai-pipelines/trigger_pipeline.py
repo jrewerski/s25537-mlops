@@ -13,6 +13,8 @@ def main(args):
         # Zakładamy, że plik ma strukturę {"parameter_values": {...}}
         pipeline_parameters = json.load(f).get("parameter_values", {})
 
+    pipeline_parameters['gcs_data_path'] = args.gcs_data_path
+    pipeline_parameters['project_id'] = args.project_id
     print(f"Submitting pipeline job with parameters: {pipeline_parameters}")
 
     # Utwórz zadanie potoku
@@ -44,5 +46,6 @@ if __name__ == "__main__":
     parser.add_argument("--parameter-file", type=str, required=True, help="Path to the JSON file with runtime parameters")
     parser.add_argument("--service-account", type=str, required=True, help="Service account to run the pipeline job")
     parser.add_argument("--pipeline-root", type=str, required=True, help="GCS URI for the pipeline root directory")
+    parser.add_argument("--gcs-data-path", type=str, required=True, help="GCS path to the input data CSV file")
     args = parser.parse_args()
     main(args)

@@ -14,3 +14,6 @@ github_repo_name = "s25537-mlops"
 
 # 3. Wklej pełny identyfikator połączenia z GitHub (uzyskasz go w Kroku 3 instrukcji)
 github_connection_id = "projects/mlops-2137/locations/us-central1/connections/git-hub" # <-- Wklej tutaj skopiowany identyfikator
+
+# Nazwa punktu końcowego dla wdrożenia
+deployment_endpoint_name = "svvc-endpoint"

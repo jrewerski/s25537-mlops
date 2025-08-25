@@ -124,9 +124,46 @@ resource "google_cloudbuild_trigger" "main-pipeline-trigger" {
     _PIPELINE_NAME            = "training-pipeline"
     _PIPELINE_SCRIPT_PATH     = "03-vertex-ai-pipelines/training-pipeline/runner.py"
     _PARAMETER_FILE           = "config/training-params.json"
+    _GCS_DATA_PATH               = "gs://${var.data_bucket_name}/penguins.csv"
   }
 
   service_account = google_service_account.vertex_ai_runner.id
   depends_on      = [google_cloudbuildv2_repository.github_repo]
 }
 
+resource "google_cloudbuild_trigger" "deployment_pipeline_trigger" {
+  project     = var.gcp_project_id
+  location    = var.gcp_region
+  name        = "trigger-deployment-from-pubsub"
+  description = "Uruchamia potok wdrożeniowy po otrzymaniu wiadomości o nowym modelu"
+
+  # Konfiguracja źródła jako wiadomości Pub/Sub
+  pubsub_config {
+    topic = google_pubsub_topic.deployment-topic.id
+  }
+
+  # Wskazanie, że plik builda znajduje się w repozytorium GitHub
+  git_file_source {
+    path      = "cloudbuild/run-deployment-pipeline.yaml"
+    repo_type = "GITHUB"
+    uri       = "https://github.com/${var.github_user_or_org}/${var.github_repo_name}.git"
+    revision  = "refs/heads/main"
+  }
+
+  # Wymaga ręcznego zatwierdzenia w konsoli Cloud Build
+  approval_config {
+    approval_required = true
+  }
+
+  # Zmienne przekazywane do procesu budowania
+  substitutions = {
+    _REGION              = var.gcp_region
+    _SERVICE_ACCOUNT     = google_service_account.vertex_ai_runner.email
+    _PIPELINE_GCS_PATH   = "gs://${var.vertex_ai_bucket_name}/deployment-pipeline"
+    _ENDPOINT_NAME       = var.deployment_endpoint_name
+    _MODEL_RESOURCE_NAME = "$(body.message.attributes.model_resource_name)"
+  }
+
+  # Użyj konta serwisowego, które stworzyliśmy
+  service_account = google_service_account.vertex_ai_runner.id
+}

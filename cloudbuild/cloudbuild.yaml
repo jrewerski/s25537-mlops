@@ -47,7 +47,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['cp', 'pipeline.json', '$_PIPELINE_GCS_PATH/$_PIPELINE_NAME.json']
   id: 'Upload Pipeline to GCS'
-  waitFor: ['Compile Pipeline']
+  waitFor: ['Compile training Pipeline']
 
 # Krok 6: Kompilacja potoku wdrozeniowego 
 - name: 'python:3.9'

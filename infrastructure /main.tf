@@ -159,7 +159,7 @@ resource "google_cloudbuild_trigger" "deployment_pipeline_trigger" {
   substitutions = {
     _REGION              = var.gcp_region
     _SERVICE_ACCOUNT     = google_service_account.vertex_ai_runner.email
-    _PIPELINE_GCS_PATH   = "gs://${var.vertex_ai_bucket_name}/deployment-pipeline"
+    _PIPELINE_GCS_PATH   = "gs://${var.vertex_ai_bucket_name}"
     _ENDPOINT_NAME       = var.deployment_endpoint_name
     _MODEL_RESOURCE_NAME = "$(body.message.attributes.model_resource_name)"
   }

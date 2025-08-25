@@ -10,11 +10,10 @@ def main(args):
 
     # Wczytaj parametry z pliku JSON 
     with open(args.parameter_file, 'r') as f:
-        # Zakładamy, że plik ma strukturę {"parameter_values": {...}}
         pipeline_parameters = json.load(f).get("parameter_values", {})
 
-    pipeline_parameters['region'] = args.region
     pipeline_parameters['project_id'] = args.project_id
+    pipeline_parameters['region'] = args.region
 
     if args.gcs_data_path:
         pipeline_parameters['gcs_data_path'] = args.gcs_data_path
@@ -22,6 +21,7 @@ def main(args):
         pipeline_parameters['endpoint_name'] = args.endpoint_name
     if args.model_resource_name:
         pipeline_parameters['model_resource_name'] = args.model_resource_name
+
     print(f"Submitting pipeline job with parameters: {pipeline_parameters}")
 
     # Utwórz zadanie potoku

@@ -13,8 +13,15 @@ def main(args):
         # Zakładamy, że plik ma strukturę {"parameter_values": {...}}
         pipeline_parameters = json.load(f).get("parameter_values", {})
 
-    pipeline_parameters['gcs_data_path'] = args.gcs_data_path
+    pipeline_parameters['region'] = args.region
     pipeline_parameters['project_id'] = args.project_id
+
+    if args.gcs_data_path:
+        pipeline_parameters['gcs_data_path'] = args.gcs_data_path
+    if args.endpoint_name:
+        pipeline_parameters['endpoint_name'] = args.endpoint_name
+    if args.model_resource_name:
+        pipeline_parameters['model_resource_name'] = args.model_resource_name
     print(f"Submitting pipeline job with parameters: {pipeline_parameters}")
 
     # Utwórz zadanie potoku
@@ -46,6 +53,10 @@ if __name__ == "__main__":
     parser.add_argument("--parameter-file", type=str, required=True, help="Path to the JSON file with runtime parameters")
     parser.add_argument("--service-account", type=str, required=True, help="Service account to run the pipeline job")
     parser.add_argument("--pipeline-root", type=str, required=True, help="GCS URI for the pipeline root directory")
-    parser.add_argument("--gcs-data-path", type=str, required=True, help="GCS path to the input data CSV file")
-    args = parser.parse_args()
+    # Argumenty opcjonalne, zależne od potoku
+    parser.add_argument("--gcs-data-path", type=str, help="GCS path to the input data CSV file")
+    parser.add_argument("--endpoint-name", type=str, help="Name of the Vertex AI Endpoint")
+    parser.add_argument("--model-resource-name", type=str, help="Resource name of the model to deploy")
+
+    args = parser.parse_args()  
     main(args)

@@ -1,8 +1,6 @@
 {
   "parameter_values": {
-    "project_id": "mlops-on-gcp-s25537",
     "region": "us-central1",
-    "model_resource_name": "3259923333495390208",
-    "endpoint_name": "puffin-endpoint"
+    "model_resource_name": "placeholder"
   }
 }

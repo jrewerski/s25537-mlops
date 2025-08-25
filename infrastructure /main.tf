@@ -127,3 +127,4 @@ resource "google_cloudbuild_trigger" "main-pipeline-trigger" {
   service_account = google_service_account.vertex_ai_runner.id
   depends_on      = [google_cloudbuildv2_repository.github_repo]
 }
+

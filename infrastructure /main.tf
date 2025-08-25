@@ -45,10 +45,12 @@ resource "google_service_account" "vertex_ai_runner" {
 # Uprawnienia dla konta serwisowego
 resource "google_project_iam_member" "vertex_ai_runner_permissions" {
   for_each = toset([
-    "roles/aiplatform.user",         # Do uruchamiania potoków Vertex AI
-    "roles/storage.objectAdmin",     # Do zapisu i odczytu w GCS
-    "roles/pubsub.publisher",        # Do publikowania wiadomości w Pub/Sub
-    "roles/artifactregistry.writer" # Do zapisu obrazów Docker
+    "roles/aiplatform.user",       
+    "roles/storage.objectAdmin",     
+    "roles/pubsub.publisher",        
+    "roles/artifactregistry.writer", 
+    "roles/iam.serviceAccountUser", 
+    "roles/logging.logWriter"
   ])
   project = var.gcp_project_id
   role    = each.value

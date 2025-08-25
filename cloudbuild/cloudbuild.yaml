@@ -24,13 +24,13 @@ steps:
   args:
     - 'build'
     - '-t'
-    - '$_CUSTOM_COMPONENT_IMAGE_URI'
+    - '${_CUSTOM_COMPONENT_IMAGE_REPO}:$SHORT_SHA'
     - '$_COMPONENTS_DIR_PATH'
   id: 'Build Custom Component Image'
   waitFor: ['Run Unit Tests']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', '$_CUSTOM_COMPONENT_IMAGE_URI']
+  args: ['push', '${_CUSTOM_COMPONENT_IMAGE_REPO}:$SHORT_SHA']
   id: 'Push Custom Component Image'
   waitFor: ['Build Custom Component Image']
 
@@ -40,7 +40,7 @@ steps:
   args: ['$_PIPELINE_SCRIPT_PATH']
   id: 'Compile Pipeline'
   env:
-    - 'CUSTOM_COMPONENT_IMAGE_URI=$_CUSTOM_COMPONENT_IMAGE_URI'
+    - 'CUSTOM_COMPONENT_IMAGE_URI=${_CUSTOM_COMPONENT_IMAGE_REPO}:$SHORT_SHA'
   waitFor: ['Push Custom Component Image']
 
   # Krok 5: Przesłanie skompilowanej definicji potoku do GCS.
@@ -63,6 +63,6 @@ steps:
   id: 'Trigger Vertex AI Pipeline'
   waitFor: ['Upload Pipeline to GCS']
 images:
-  - '$_CUSTOM_COMPONENT_IMAGE_URI'
+  - '${_CUSTOM_COMPONENT_IMAGE_REPO}:$SHORT_SHA'
 options:
   logging: CLOUD_LOGGING_ONLY

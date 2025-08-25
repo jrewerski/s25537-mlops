@@ -117,7 +117,7 @@ resource "google_cloudbuild_trigger" "main-pipeline-trigger" {
     _REGION                   = var.gcp_region
     _SERVICE_ACCOUNT          = google_service_account.vertex_ai_runner.email
     _PIPELINE_GCS_PATH        = "gs://${var.vertex_ai_bucket_name}"
-    _CUSTOM_COMPONENT_IMAGE_URI = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/${google_artifact_registry_repository.mlops_repo.repository_id}/training-components:$SHORT_SHA"
+    _CUSTOM_COMPONENT_IMAGE_REPO = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/${google_artifact_registry_repository.mlops_repo.repository_id}/training-components"
     _COMPONENTS_DIR_PATH      = "03-vertex-ai-pipelines/training-pipeline/components"
     _PIPELINE_NAME            = "training-pipeline"
     _PIPELINE_SCRIPT_PATH     = "03-vertex-ai-pipelines/training-pipeline/runner.py"

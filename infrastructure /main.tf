@@ -96,6 +96,7 @@ resource "google_pubsub_topic" "deployment-topic" {
   name = "model-deployment-topic"
 }
 
+
 # Stworzenie wyzwalacza (triggera) na podstawie powiązanego repozytorium
 resource "google_cloudbuild_trigger" "main-pipeline-trigger" {
   project     = var.gcp_project_id
